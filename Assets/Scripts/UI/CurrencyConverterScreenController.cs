@@ -9,7 +9,7 @@ public class CurrencyConverterScreenController : MonoBehaviour {
 
     #region Fields
 
-    private string BASE_CURENCY = "EUR";
+    private string BASE_CURRENCY = "EUR";
 
     [SerializeField] private FixerIOClient fixerIOClient;
 
@@ -37,7 +37,7 @@ public class CurrencyConverterScreenController : MonoBehaviour {
 
     void Awake () {
         conversionResultPanel.SetActive(false);
-        baseRateSymbol = BASE_CURENCY;
+        baseRateSymbol = BASE_CURRENCY;
         FixerIOClient.CurrencyResultEvent += OnCurrencyResultEvent;
     }
 
@@ -64,6 +64,7 @@ public class CurrencyConverterScreenController : MonoBehaviour {
         if (currentRates != null)
             baseRateSymbol = ratesSymbols[fromCurrencyDropdown.value];
         RequestFixerIORates();
+        conversionResultPanel.SetActive(ConvertCurrentCurrencySelection());
     }
 
     public void OnToCurrencyDropdownChangeEvent () {
@@ -85,7 +86,7 @@ public class CurrencyConverterScreenController : MonoBehaviour {
 
     private void InitializeCurrencyConverterScreen () {
         ratesSymbols = new List<string>();
-        ratesSymbols.Add(BASE_CURENCY);
+        ratesSymbols.Add(BASE_CURRENCY);
         currentRates.ForEach(x => ratesSymbols.Add(x.Symbol));
         UpdateFromCurrencyDropdown();
         UpdateToCurrencyDropdown();
@@ -97,7 +98,7 @@ public class CurrencyConverterScreenController : MonoBehaviour {
         List<string> options = new List<string>();
         ratesSymbols.ForEach(x => options.Add(x));
         fromCurrencyDropdown.AddOptions(options);
-        int baseRateIndex = ratesSymbols.IndexOf(ratesSymbols.FirstOrDefault(x => string.Equals(x, BASE_CURENCY)));
+        int baseRateIndex = ratesSymbols.IndexOf(ratesSymbols.FirstOrDefault(x => string.Equals(x, BASE_CURRENCY)));
         fromCurrencyDropdown.value = baseRateIndex;
     }
 
@@ -110,7 +111,7 @@ public class CurrencyConverterScreenController : MonoBehaviour {
 
     private void RequestFixerIORates () {
         DateTime selectedDate = datePanelController.GetSelectedDate();
-        // TODO: informing user about this
+        // TODO: informing the user about this
         if (selectedDate < new DateTime(1999, 1, 1))
             return;
         fixerIOClient.GetRates(baseRateSymbol, selectedDate);
@@ -121,9 +122,6 @@ public class CurrencyConverterScreenController : MonoBehaviour {
         int currencyAmount;
         if (currencyAmountInputText != null && currencyAmountInputText != string.Empty && int.TryParse(currencyAmountInputField.text, out currencyAmount)) {
             currencyConversionResult.text = (currencyAmount * 1 / currentRates[toCurrencyDropdown.value].Value).ToString();
-            Debug.Log("currencyAmountInputText " + currencyAmountInputText);
-            Debug.Log("currentRates[toCurrencyDropdown.value].Value " + currentRates[toCurrencyDropdown.value].Value);
-            Debug.Log("currencyConversionResult.text " + currencyConversionResult.text);
             return true;
         } else {
             return false;

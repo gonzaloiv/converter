@@ -16,7 +16,6 @@ public class FixerIOClient : MonoBehaviour {
 
     #region Events
 
-
     public delegate void CurrencyResultEventHandler (CurrencyResultEventArgs currencyResultEventArgs);
     public static event CurrencyResultEventHandler CurrencyResultEvent;
 
@@ -24,7 +23,7 @@ public class FixerIOClient : MonoBehaviour {
 
     #region Mono Behaviour
 
-    void Awake () {
+    void OnEnable () {
         GetRates();
     }
 
@@ -43,10 +42,7 @@ public class FixerIOClient : MonoBehaviour {
     }
 
     public void GetRates(string currencySymbol, DateTime date) {
-        Debug.Log("GetRates.Date " + date.ToString("yyyy-MM-dd"));
         string url = FIXER_BASE_URL + date.ToString("yyyy-MM-dd") + "?base=" + currencySymbol;
-        Debug.Log("url " + url);
-//        string url = FIXER_BASE_URL + date.ToString("yyyy-MM-dd");
         StartCoroutine(RequestRoutine(url));
     }
 
@@ -72,10 +68,8 @@ public class FixerIOClient : MonoBehaviour {
     private CurrencyResultEventArgs ProcessResponse (string responseText) {
         JsonData responseData = JsonMapper.ToObject(responseText);
         CurrencyResultEventArgs currencyResultEventArgs = new CurrencyResultEventArgs(responseData["base"].ToString());
-        foreach (var key in responseData["rates"].Keys) {
-            var value = responseData["rates"][key];
-            currencyResultEventArgs.Rates.Add(new Rate(key.ToString(), float.Parse(value.ToString())));
-        }
+        foreach (var key in responseData["rates"].Keys)
+            currencyResultEventArgs.Rates.Add(new Rate(key.ToString(), float.Parse(responseData["rates"][key].ToString())));
         return currencyResultEventArgs;
     }
 
