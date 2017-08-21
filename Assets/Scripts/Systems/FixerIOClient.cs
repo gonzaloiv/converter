@@ -52,7 +52,7 @@ public class FixerIOClient : MonoBehaviour {
     public void GetRates(string currencySymbol, DateTime date) {
         if (date < new DateTime(1999, 1, 1))
             throw new NotSupportedException("Only currency information from 1999 is available");
-        string url = FIXER_BASE_URL + + date.ToString("yyyy-MM-dd") + "?base=" + currencySymbol;
+        string url = FIXER_BASE_URL + date.ToString("yyyy-MM-dd") + "?base=" + currencySymbol;
         StartCoroutine(RequestRoutine(url));
     }
 

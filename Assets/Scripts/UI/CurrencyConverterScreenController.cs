@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using System;
 
 public class CurrencyConverterScreenController : MonoBehaviour {
 
@@ -22,13 +23,11 @@ public class CurrencyConverterScreenController : MonoBehaviour {
     [SerializeField] private Dropdown toCurrencyDropdown;
 
     // DATE PANEL
-    [SerializeField] private InputField yearInputField;
-    [SerializeField] private InputField monthInputField;
-    [SerializeField] private InputField dayInputField;
+    [SerializeField] private DatePanelController datePanelController;
 
-    private string baseRateSymbol;
     private List<string> ratesSymbols;
     private List<Rate> currentRates;
+    private string baseRateSymbol;
     private bool initialized = false;
 
     #endregion
@@ -62,12 +61,19 @@ public class CurrencyConverterScreenController : MonoBehaviour {
     }
 
     public void OnToCurrencyDropdownChangeEvent () {
+        if (!conversionResultPanel.activeInHierarchy)
+            conversionResultPanel.SetActive(true);
         // TODO: convert current amount...
+    }
+
+    public void OnDatePanelChangeEvent () {
+        RequestFixerIORates();
     }
 
     public void OnConvertButtonClick () {
         if (!conversionResultPanel.activeInHierarchy)
             conversionResultPanel.SetActive(true);
+        // TODO: convert current amount...
     }
 
     #endregion
@@ -100,8 +106,12 @@ public class CurrencyConverterScreenController : MonoBehaviour {
     }
 
     private void RequestFixerIORates() {
-        // TODO: implementing this...
-        fixerIOClient.GetRates();
+        DateTime selectedDate = datePanelController.GetSelectedDate();
+        if (selectedDate ==  new DateTime(1111, 11, 11)) {
+            fixerIOClient.GetRates(baseRateSymbol);
+        } else {
+            fixerIOClient.GetRates(baseRateSymbol, selectedDate);
+        }
     }
 
     #endregion
