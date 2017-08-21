@@ -28,6 +28,7 @@ public class CurrencyConverterScreenController : MonoBehaviour {
     private List<string> ratesSymbols;
     private List<Rate> currentRates;
     private string baseRateSymbol;
+
     private bool initialized = false;
 
     #endregion
@@ -36,6 +37,7 @@ public class CurrencyConverterScreenController : MonoBehaviour {
 
     void Awake () {
         conversionResultPanel.SetActive(false);
+        baseRateSymbol = BASE_CURENCY;
         FixerIOClient.CurrencyResultEvent += OnCurrencyResultEvent;
     }
 
@@ -54,6 +56,10 @@ public class CurrencyConverterScreenController : MonoBehaviour {
             InitializeCurrencyConverterScreen();
     }
 
+    public void OnCurrencyAmountInputFieldChangeEvent () {
+        conversionResultPanel.SetActive(ConvertCurrentCurrencySelection());
+    }
+
     public void OnFromCurrencyDropdownChangeEvent () {
         if (currentRates != null)
             baseRateSymbol = ratesSymbols[fromCurrencyDropdown.value];
@@ -61,19 +67,16 @@ public class CurrencyConverterScreenController : MonoBehaviour {
     }
 
     public void OnToCurrencyDropdownChangeEvent () {
-        if (!conversionResultPanel.activeInHierarchy)
-            conversionResultPanel.SetActive(true);
-        // TODO: convert current amount...
+        conversionResultPanel.SetActive(ConvertCurrentCurrencySelection());
     }
 
     public void OnDatePanelChangeEvent () {
         RequestFixerIORates();
+        conversionResultPanel.SetActive(ConvertCurrentCurrencySelection());
     }
 
     public void OnConvertButtonClick () {
-        if (!conversionResultPanel.activeInHierarchy)
-            conversionResultPanel.SetActive(true);
-        // TODO: convert current amount...
+        conversionResultPanel.SetActive(ConvertCurrentCurrencySelection());
     }
 
     #endregion
@@ -105,12 +108,25 @@ public class CurrencyConverterScreenController : MonoBehaviour {
         toCurrencyDropdown.AddOptions(options);
     }
 
-    private void RequestFixerIORates() {
+    private void RequestFixerIORates () {
         DateTime selectedDate = datePanelController.GetSelectedDate();
-        if (selectedDate ==  new DateTime(1111, 11, 11)) {
-            fixerIOClient.GetRates(baseRateSymbol);
+        // TODO: informing user about this
+        if (selectedDate < new DateTime(1999, 1, 1))
+            return;
+        fixerIOClient.GetRates(baseRateSymbol, selectedDate);
+    }
+
+    private bool ConvertCurrentCurrencySelection () {
+        string currencyAmountInputText = currencyAmountInputField.text;
+        int currencyAmount;
+        if (currencyAmountInputText != null && currencyAmountInputText != string.Empty && int.TryParse(currencyAmountInputField.text, out currencyAmount)) {
+            currencyConversionResult.text = (currencyAmount * 1 / currentRates[toCurrencyDropdown.value].Value).ToString();
+            Debug.Log("currencyAmountInputText " + currencyAmountInputText);
+            Debug.Log("currentRates[toCurrencyDropdown.value].Value " + currentRates[toCurrencyDropdown.value].Value);
+            Debug.Log("currencyConversionResult.text " + currencyConversionResult.text);
+            return true;
         } else {
-            fixerIOClient.GetRates(baseRateSymbol, selectedDate);
+            return false;
         }
     }
 

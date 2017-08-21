@@ -24,7 +24,8 @@ public class DatePanelController : MonoBehaviour {
 
     public DateTime GetSelectedDate () {
         if (InputIsValid(yearInputField.text) && InputIsValid(monthInputField.text) && InputIsValid(dayInputField.text)) {
-            return new DateTime(Int32.Parse(yearInputField.text), Int32.Parse(monthInputField.text), Int32.Parse(dayInputField.text));
+            DateTime selectedDateTime = new DateTime(Int32.Parse(yearInputField.text), Int32.Parse(monthInputField.text), Int32.Parse(dayInputField.text));
+            return selectedDateTime;
         } else {
             // TODO: finding an alternative to this...
             return new DateTime(1111, 11, 11);
@@ -36,7 +37,7 @@ public class DatePanelController : MonoBehaviour {
     #region Private Behaviour
 
     private bool InputIsValid (string inputText) {
-        return inputText != null && inputText != string.Empty;
+        return inputText != null && inputText != string.Empty && inputText != "0";
     }
 
     #endregion

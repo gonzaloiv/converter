@@ -37,22 +37,16 @@ public class FixerIOClient : MonoBehaviour {
         StartCoroutine(RequestRoutine(url));
     }
 
-    public void GetRates (DateTime date) {
-        if (date < new DateTime(1999, 1, 1))
-            throw new NotSupportedException("Only currency information from 1999 is available");
-        string url = FIXER_BASE_URL + date.ToString("yyyy-MM-dd");
-        StartCoroutine(RequestRoutine(url));
-    }
-
     public void GetRates(string currencySymbol) {
         string url = FIXER_BASE_URL + "latest?base=" + currencySymbol;
         StartCoroutine(RequestRoutine(url));
     }
 
     public void GetRates(string currencySymbol, DateTime date) {
-        if (date < new DateTime(1999, 1, 1))
-            throw new NotSupportedException("Only currency information from 1999 is available");
+        Debug.Log("GetRates.Date " + date.ToString("yyyy-MM-dd"));
         string url = FIXER_BASE_URL + date.ToString("yyyy-MM-dd") + "?base=" + currencySymbol;
+        Debug.Log("url " + url);
+//        string url = FIXER_BASE_URL + date.ToString("yyyy-MM-dd");
         StartCoroutine(RequestRoutine(url));
     }
 
