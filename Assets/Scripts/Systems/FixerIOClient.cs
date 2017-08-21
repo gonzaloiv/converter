@@ -4,44 +4,55 @@ using UnityEngine;
 using System;
 using LitJson;
 
-// Based on: https://github.com/Lukejkw/Fixer-IO-Sharp/blob/master/Fixer-IO-Sharp/FixerIOClient.cs
+// Based on: https://github.com/Lukejkw/Fixer-IO-Sharp
+// and: https://github.com/rmorrin/FixerSharp
 public class FixerIOClient : MonoBehaviour {
 
     #region Fields
 
     private const string FIXER_BASE_URL = "http://api.fixer.io/";
-    private string BASE_CURENCY = "EUR";
 
     #endregion
-	
+
     #region Events
 
 
-    public delegate void CurrencyResultEventHandler (CurrencyResultArgs currencyResultArgs);
+    public delegate void CurrencyResultEventHandler (CurrencyResultEventArgs currencyResultEventArgs);
     public static event CurrencyResultEventHandler CurrencyResultEvent;
 
     #endregion
 
     #region Mono Behaviour
 
-    void Awake() {
-        GetLatest();
-        GetRatesForDate(new DateTime(2004, 12, 20));
+    void Awake () {
+        GetRates();
     }
 
     #endregion
 
     #region Public  Behaviour
 
-    public void GetLatest() {
+    public void GetRates () {
         string url = FIXER_BASE_URL + "latest";
         StartCoroutine(RequestRoutine(url));
     }
 
-    public void GetRatesForDate(DateTime date) {
+    public void GetRates (DateTime date) {
         if (date < new DateTime(1999, 1, 1))
             throw new NotSupportedException("Only currency information from 1999 is available");
         string url = FIXER_BASE_URL + date.ToString("yyyy-MM-dd");
+        StartCoroutine(RequestRoutine(url));
+    }
+
+    public void GetRates(string currencySymbol) {
+        string url = FIXER_BASE_URL + "latest?base=" + currencySymbol;
+        StartCoroutine(RequestRoutine(url));
+    }
+
+    public void GetRates(string currencySymbol, DateTime date) {
+        if (date < new DateTime(1999, 1, 1))
+            throw new NotSupportedException("Only currency information from 1999 is available");
+        string url = FIXER_BASE_URL + + date.ToString("yyyy-MM-dd") + "?base=" + currencySymbol;
         StartCoroutine(RequestRoutine(url));
     }
 
@@ -49,16 +60,29 @@ public class FixerIOClient : MonoBehaviour {
 
     #region Private Behaviour
 
-    private IEnumerator RequestRoutine(string url) {
+    private IEnumerator RequestRoutine (string url) {
         WWW www = new WWW(url);
         yield return www;
         while (!www.isDone)
             yield return null;
         if (www.error != null) {
+            Debug.Log("It was impossible to get Fixer.io rates");
             Debug.Log(www.error);
         } else {
+            Debug.Log("Fixer.io rates downloaded correctly");
             Debug.Log(www.text);
+            CurrencyResultEvent(ProcessResponse(www.text));
         }
+    }
+
+    private CurrencyResultEventArgs ProcessResponse (string responseText) {
+        JsonData responseData = JsonMapper.ToObject(responseText);
+        CurrencyResultEventArgs currencyResultEventArgs = new CurrencyResultEventArgs(responseData["base"].ToString());
+        foreach (var key in responseData["rates"].Keys) {
+            var value = responseData["rates"][key];
+            currencyResultEventArgs.Rates.Add(new Rate(key.ToString(), float.Parse(value.ToString())));
+        }
+        return currencyResultEventArgs;
     }
 
     #endregion
