@@ -19,11 +19,14 @@ public class FixerIOClient : MonoBehaviour {
     public delegate void CurrencyResultEventHandler (CurrencyResultEventArgs currencyResultEventArgs);
     public static event CurrencyResultEventHandler CurrencyResultEvent;
 
+    public delegate void CurrencyErrorEventHandler (string errorMessage);
+    public static event CurrencyErrorEventHandler CurrencyErrorEvent;
+
     #endregion
 
     #region Mono Behaviour
 
-    void OnEnable () {
+    void Awake () {
         GetRates();
     }
 
@@ -56,10 +59,9 @@ public class FixerIOClient : MonoBehaviour {
         while (!www.isDone)
             yield return null;
         if (www.error != null) {
-            Debug.Log("It was impossible to get Fixer.io rates");
             Debug.Log(www.error);
+            CurrencyErrorEvent("It was impossible to get Fixer.io rates");
         } else {
-            Debug.Log("Fixer.io rates downloaded correctly");
             Debug.Log(www.text);
             CurrencyResultEvent(ProcessResponse(www.text));
         }
